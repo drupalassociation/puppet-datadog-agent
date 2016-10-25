@@ -22,15 +22,6 @@ class datadog_agent::reports(
 ) {
 
   include datadog_agent::params
-  $rubydev_package = $datadog_agent::params::rubydev_package
-
-  # check to make sure that you're not installing rubydev somewhere else
-  if ! defined(Package[$rubydev_package]) {
-    package {$rubydev_package:
-      ensure => installed,
-      before => Package['dogapi']
-    }
-  }
 
   if (! defined(Package['rubygems'])) {
     # Ensure rubygems is installed

@@ -21,15 +21,6 @@ class datadog_agent::reports(
   $hostname_extraction_regex = nil
 ) {
 
-  include datadog_agent::params
-
-  if (! defined(Package['rubygems'])) {
-    # Ensure rubygems is installed
-    class { 'ruby':
-      rubygems_update => false
-    }
-  }
-
   file { '/etc/dd-agent/datadog.yaml':
     ensure  => file,
     content => template('datadog_agent/datadog.yaml.erb'),
@@ -39,7 +30,7 @@ class datadog_agent::reports(
     require => File['/etc/dd-agent'],
   }
 
-  package{'dogapi':
+  package{ 'dogapi':
     ensure   => $dogapi_version,
     provider => $puppet_gem_provider,
   }

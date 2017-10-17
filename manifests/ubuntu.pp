@@ -10,25 +10,33 @@
 #
 # Sample Usage:
 #
+#
+
 class datadog_agent::ubuntu(
-  $apt_key = 'C7A7DA52',
-  $agent_version = 'latest'
+  $apt_key = 'A2923DFF56EDA6E76E55E492D3A80E30382E94DE',
+  $agent_version = 'latest',
+  $other_keys = ['935F5A436A5A6E8788F0765B226AE980C7A7DA52'],
+  $location = 'https://apt.datadoghq.com',
+  $release = 'stable',
+  $repos = 'main',
 ) {
 
   ensure_packages(['apt-transport-https'])
+  validate_array($other_keys)
 
   if !$::datadog_agent::skip_apt_key_trusting {
-    exec { 'datadog_key':
-      command => "/usr/bin/apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys ${apt_key}",
-      unless  => "/usr/bin/apt-key list | grep ${apt_key} | grep expires",
+    $mykeys = concat($other_keys, [$apt_key])
+
+    ::datadog_agent::ubuntu::install_key { $mykeys:
       before  => File['/etc/apt/sources.list.d/datadog.list'],
     }
+
   }
 
   file { '/etc/apt/sources.list.d/datadog.list':
-    source  => 'puppet:///modules/datadog_agent/datadog.list',
     owner   => 'root',
     group   => 'root',
+    content => template('datadog_agent/datadog.list.erb'),
     notify  => Exec['datadog_apt-get_update'],
     require => Package['apt-transport-https'],
   }
